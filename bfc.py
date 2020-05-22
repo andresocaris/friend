@@ -1,23 +1,35 @@
 import snap
 import matplotlib.pyplot as plt
-
+import numpy as np
 def read_input():
-    f = open ('inputs/musae_git_edges.csv','r')
-    linea = f.readline()
+    f = open ('inputs/in.txt','r')
+    #linea = f.readline()
     G = snap.TNGraph.New()
-    for x in range(0,50000):
-        G.AddNode(x)
-    ind=[]
-    for x in range(0,50000):
-        ind.append(0)
-        
-    while ( 1 ):
+
+    v1=[]
+    v2=[]
+    s=set()
+    maxi=0
+    while ( 1 ):    
         linea = f.readline()
         if linea == "": break
         x,y =map(int,linea.split(","))
-        #print(x," ",y)
-        G.AddEdge(x,y)
-        ind[x]+=1
+        v1.append(x)
+        v2.append(y)
+        s.add(x)
+        maxi=max(x,maxi)
+        maxi=max(y,maxi)
+    tam = maxi
+    for x in range(0,tam+1):
+        if x == 0 :
+            continue
+        G.AddNode(x)
+    ind=[]
+    for x in range(0,tam+1):
+        ind.append(0)
+    for i in range(0,len(v1)):
+        G.AddEdge(v1[i],v2[i])
+        ind[v1[i]]+=1
     return G,ind
 
 # Given a graph G, compute the Best Current Friend (BCF) for node v
@@ -38,29 +50,38 @@ def BCF( G, ind, v ):
         else:
             cfprv[j]=100
     # The BCF of a node v is defined as the adjacent node which has minimum CFPRV
+    print(cfprv)
     for j in range(0,n):
-        if abs(val-cfprv[j])<1e-8:
+        if abs(val-cfprv[j])<1e-4:
             return j+1, cfprv
             
 # Plot the pagerank of node's n neighbors
+def imprimir(x,y):
+    objects = x
+    y_pos = np.arange(len(objects))
+    performance = y
+    plt.bar(y_pos, performance, align='center', alpha=0.5)
+    plt.xticks(y_pos, objects)
+    plt.ylabel('Page Rank')
+    plt.title('Node')
+    plt.show()
 def plot( G, pageranks, n ):
     for u in G.Nodes():
         if u.GetId() == n:
             x = []
             pr = []
-            for v in u.GetOutEdges():
+            for v in u.GetInEdges():
                 x.append(v)
-                pr.append(pageranks[v])
-            plt.bar(x, pr)
-            plt.show()
+                pr.append(pageranks[v-1])
+            imprimir(x, pr)
             return
 
 
 def main():
     G, ind = read_input()
-    bcf, cfprv = BCF(G, ind, 100)
+    bcf, cfprv = BCF(G, ind, 1)
     print(bcf)
-    plot(G, cfprv, 3)
+    plot(G, cfprv, 1)
 
 if __name__ == "__main__":
         main()
